@@ -10,7 +10,12 @@ public class ConversionTester {
 	public static void main(String [] args)
 	{
 		Conversion tester = new Conversion(); 
-		System.out.println(tester.range(1));
-		System.out.println(tester.convertDecimalToBinary(12));
+		//System.out.println(Integer.toBinaryString(-12));
+		//System.out.println(tester.range(-32) + " bits");
+		String binary = tester.convertDecimalToBinary(16);
+		System.out.println(binary);
+		
+		double decimal = tester.positiveBinaryToDecimal(binary); 
+		System.out.println(decimal);
 	}
 }
