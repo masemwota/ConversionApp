@@ -9,6 +9,7 @@ public class Conversion {
 	//variables to store the range of the number
 	private double lowerBound; 
 	private double upperBound;
+	private double numberOfBits; 
 	
 	
 	/*
@@ -27,16 +28,16 @@ public class Conversion {
 	 * @return a String representation of the converted number to preserve the 0's
 	 */
 	public String convertDecimalToBinary(double number) {
-		
-		String binary = ""; 
-		
+		//append the signed bit to the beginning of the converted string and return it
+		//range(number); 
+		//System.out.println(lowerBound);
 		if(number < 0)
 		{
-			return negativeConvert(number); 
+			return "1" + negativeConvert(number); 
 		}
 		else if (number > 0)
 		{
-			return positiveConvert(number); 
+			return "0"+ positiveConvert(number); 
 		}
 		return "0000"; 
 		
@@ -45,45 +46,31 @@ public class Conversion {
 	
 	public String positiveConvert(double number)
 	{
+		range(number);
 		//to hold the converted number
 		String binary = ""; 
-		
-		//the first digit of the converted number will be the signed bit
-		int signBit;
-		
-		//in 2s complement, negative numbers have a signed bit of 1
-		if (number < 0) 
-		{ // number is negative
-			signBit = 1; 
-		} 
-		//positive numbers have a signed bit of 0
-		else 
-		{
-			signBit = 0;
-		}
-		
-		
+	
 		//set to arbitrary values
 		int result = -1;
 		int remainder = -1;
+		double dividend = number;
 		
 		while (result != 0) 
 		{
 			//divide the number by 2 and take the remainder
-			result = (int) Math.floor(number/2);
-			remainder = (int)number % 2;
+			result = (int) Math.floor(dividend/2);
+			remainder = (int)dividend % 2;
 			
 			//append the remainder to the front because conversion is read backwards
 			binary = Integer.toString(remainder) + binary;
-			
-			/*
-			 * Why do we set number equal to result???????? 
-			 */
-			number = result;
+		
+			dividend = result;
 		}
 		
-		//append the signed bit to the beginning of the converted string and return it
-		binary = signBit + binary;
+		while(binary.length() != numberOfBits)
+		{
+			binary = "0" + binary; 
+		}
 		return binary; 
 	}
 	
@@ -102,15 +89,17 @@ public class Conversion {
 		{
 			isNegative = true; 
 			//-1 to account for the fact that the positive part of the range is one less
-			number = Math.abs(number);  
+			number = Math.abs(number); 
 		}
 		
+		System.out.println(number);
 		//we need log base 2 of the number to find the range
 		//change of base: need base 10 of original number as well as base converting to
 		double baseTen = Math.log10(number); 
 		double logTwo = Math.log10(2);
 		double result = baseTen / logTwo; //now the number is in base 2
 		
+		System.out.println(result);
 		//check if the result is a whole number 
 		if(result % 1 == 0)
 		{
@@ -121,20 +110,35 @@ public class Conversion {
 		
 		else 
 		{
-			result = Math.round(result); 
+			//result = Math.round(result); 
+			result = Math.floor(result); 
+			result++; 
 		}
+		System.out.println(result);
 		
-		result++; 
 		
 		if((isNegative) && (number % 8 == 0))
 		{
 			result--; 
 		}
 		
-		upperBound = Math.pow(2, result-1)-1;  
+		
+		/*
+		 * 
+		 * 
+		 * FIX THIS SHIT
+		 * 
+		 * THIS SHIT IS BROKEN
+		 * 
+		 * 
+		 */
+		result++; 
+		
+		upperBound = Math.pow(2, result-1)-1;
 		lowerBound = upperBound+1; 
 		
 		System.out.println("-" + lowerBound + ", " + upperBound);
+		numberOfBits = result; 
 		return result; 
 	}
 	
@@ -160,27 +164,34 @@ public class Conversion {
 	*/
 	
 	public String negativeConvert(double number) {
-        int numBits = (int)range(number);
-        double toConvert = Math.abs(lowerBound) - Math.abs(number);
+        //int numBits = (int)range(number);
+        double toConvert = Math.abs(Math.abs(lowerBound) - Math.abs(number));
+        //System.out.println(lowerBound);
+        //System.out.println(toConvert);
         String converted = convertDecimalToBinary(toConvert);
-        converted = "1" + converted;
         return converted;
     }
 	
-	public double binaryToDecimal(String binary)
+	public double binaryToDecimal(String number)
 	{
-		int sigInt = Integer.parseInt(binary.substring(0)); 
+		//range(Double.parseDouble(binary)); 
+		int length = number.length(); 
+		lowerBound = Math.pow(2, length-1); 
+		upperBound = lowerBound-1;
 		
+		System.out.println("ub: " + upperBound + " lb: " + lowerBound);
+		
+		int sigInt = Integer.parseInt(number.substring(0,1)); 
 		if(sigInt == 1)
 		{
 			//return the negative conversion 
-			return negativeBinaryToDecimal(binary); 
+			return negativeBinaryToDecimal(number); 
 		}
 		
 		else if (sigInt == 0)
 		{
 			//return the positive decimal conversion
-			return positiveBinaryToDecimal(binary); 
+			return positiveBinaryToDecimal(number); 
 		}
 		
 		else 
@@ -216,8 +227,15 @@ public class Conversion {
 		
 	}
 	
-	public double negativeBinaryToDecimal(String number)
-	{
-		return 0; 
-	}
+	 public double negativeBinaryToDecimal(String number)
+	    {
+	        String withoutSign = number.substring(1);
+	        double intermediate = positiveBinaryToDecimal(withoutSign);
+	        System.out.println("intermediate: " + intermediate);
+	        
+	        double x = Math.abs(lowerBound) - intermediate;
+	        //System.out.println("lb: " + lowerBound);
+	        return 0-x;
+	        
+	    }
 }
